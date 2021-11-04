@@ -722,8 +722,6 @@ void do_exit(long code)
 
 	schedtune_exit_task(tsk);
 
-<<<<<<< HEAD
-=======
 	if (tsk->flags & PF_SU) {
 		su_exit();
 	}
@@ -735,7 +733,6 @@ void do_exit(long code)
 	smp_mb();
 	raw_spin_unlock_wait(&tsk->pi_lock);
 
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 	if (unlikely(in_atomic())) {
 		pr_info("note: %s[%d] exited with preempt_count %d\n",
 			current->comm, task_pid_nr(current),
