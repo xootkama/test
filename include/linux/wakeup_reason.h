@@ -54,11 +54,8 @@ struct wakeup_irq_node {
 	bool handled;
 };
 
-<<<<<<< HEAD
-=======
 #ifdef CONFIG_DEDUCE_WAKEUP_REASONS
 
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 /* Called in the resume path, with interrupts and nonboot cpus disabled; on
  * need for a spinlock.
  */
@@ -66,40 +63,16 @@ static inline void start_logging_wakeup_reasons(void)
 {
 	extern bool log_wakeups;
 	extern struct completion wakeups_completion;
-<<<<<<< HEAD
-	log_wakeups = true;
-	init_completion(&wakeups_completion);
-}
-
-static inline bool logging_wakeup_reasons(void)
-=======
 	ACCESS_ONCE(log_wakeups) = true;
 	init_completion(&wakeups_completion);
 }
 
 static inline bool logging_wakeup_reasons_nosync(void)
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 {
 	extern bool log_wakeups;
 	return ACCESS_ONCE(log_wakeups);
 }
 
-<<<<<<< HEAD
-void log_base_wakeup_reason(int irq);
-
-void log_suspend_abort_reason(const char *fmt, ...);
-
-bool log_possible_wakeup_reason(int irq,
-			struct irq_desc *desc,
-			bool (*handler)(struct irq_desc *));
-
-int check_wakeup_reason(int irq);
-
-const struct list_head*
-get_wakeup_reasons(unsigned long timeout, struct list_head *unfinished);
-
-void clear_wakeup_reasons(void);
-=======
 static inline bool logging_wakeup_reasons(void)
 {
 	smp_rmb();
@@ -120,7 +93,6 @@ static inline bool log_possible_wakeup_reason(int irq,
 			bool (*handler)(struct irq_desc *)) { return true; }
 
 #endif
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 
 const struct list_head*
 get_wakeup_reasons(unsigned long timeout, struct list_head *unfinished);
