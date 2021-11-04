@@ -127,11 +127,6 @@ void su_exit(void)
 {
 	atomic_dec(&__su_instances);
 }
-<<<<<<< HEAD
-
-ATOMIC_NOTIFIER_HEAD(load_alert_notifier_head);
-=======
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 
 DEFINE_MUTEX(sched_domains_mutex);
 DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
