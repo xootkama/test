@@ -554,12 +554,6 @@ static int wakeup_reason_pm_event(struct notifier_block *notifier,
 		clear_wakeup_reasons();
 		break;
 	case PM_POST_SUSPEND:
-		/* log_wakeups should have been cleared by now. */
-		if (WARN_ON(logging_wakeup_reasons())) {
-			stop_logging_wakeup_reasons();
-			mb();
-			print_wakeup_sources();
-		}
 		/* monotonic time since boot */
 		curr_monotime = ktime_get();
 		/* monotonic time since boot including the time spent in suspend */
