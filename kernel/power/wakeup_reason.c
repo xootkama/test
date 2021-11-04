@@ -564,15 +564,6 @@ static int wakeup_reason_pm_event(struct notifier_block *notifier,
 		curr_monotime = ktime_get();
 		/* monotonic time since boot including the time spent in suspend */
 		curr_stime = ktime_get_boottime();
-#ifdef CONFIG_DEDUCE_WAKEUP_REASONS
-		/* log_wakeups should have been cleared by now. */
-		if (WARN_ON(logging_wakeup_reasons())) {
-			stop_logging_wakeup_reasons();
-			print_wakeup_sources();
-		}
-#else
-		print_wakeup_sources();
-#endif
 		break;
 	default:
 		break;
@@ -586,44 +577,26 @@ static struct notifier_block wakeup_reason_pm_notifier_block = {
 
 int __init wakeup_reason_init(void)
 {
-	spin_lock_init(&resume_reason_lock);
+	int retval;
 
-	if (register_pm_notifier(&wakeup_reason_pm_notifier_block)) {
-		pr_warning("[%s] failed to register PM notifier\n",
-			__func__);
-		goto fail;
-	}
+	retval = register_pm_notifier(&wakeup_reason_pm_notifier_block);
+	if (retval)
+		printk(KERN_WARNING "[%s] failed to register PM notifier %d\n",
+				__func__, retval);
 
 	wakeup_reason = kobject_create_and_add("wakeup_reasons", kernel_kobj);
 	if (!wakeup_reason) {
-		pr_warning("[%s] failed to create a sysfs kobject\n",
+		printk(KERN_WARNING "[%s] failed to create a sysfs kobject\n",
 				__func__);
-		goto fail_unregister_pm_notifier;
+		return 1;
 	}
-
-	if (sysfs_create_group(wakeup_reason, &attr_group)) {
-		pr_warning("[%s] failed to create a sysfs group\n",
-			__func__);
-		goto fail_kobject_put;
+	retval = sysfs_create_group(wakeup_reason, &attr_group);
+	if (retval) {
+		kobject_put(wakeup_reason);
+		printk(KERN_WARNING "[%s] failed to create a sysfs group %d\n",
+				__func__, retval);
 	}
-
-	wakeup_irq_nodes_cache =
-		kmem_cache_create("wakeup_irq_node_cache",
-					sizeof(struct wakeup_irq_node), 0,
-					0, NULL);
-	if (!wakeup_irq_nodes_cache)
-		goto fail_remove_group;
-
 	return 0;
-
-fail_remove_group:
-	sysfs_remove_group(wakeup_reason, &attr_group);
-fail_kobject_put:
-	kobject_put(wakeup_reason);
-fail_unregister_pm_notifier:
-	unregister_pm_notifier(&wakeup_reason_pm_notifier_block);
-fail:
-	return 1;
 }
 
 late_initcall(wakeup_reason_init);
