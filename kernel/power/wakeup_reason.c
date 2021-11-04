@@ -110,10 +110,7 @@ add_to_siblings(struct wakeup_irq_node *root, int irq)
 	return n;
 }
 
-<<<<<<< HEAD
-=======
 #ifdef CONFIG_DEDUCE_WAKEUP_REASONS
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 static struct wakeup_irq_node* add_child(struct wakeup_irq_node *root, int irq)
 {
 	if (!root->child) {
@@ -154,10 +151,7 @@ get_base_node(struct wakeup_irq_node *node, unsigned depth)
 
 	return node;
 }
-<<<<<<< HEAD
-=======
 #endif /* CONFIG_DEDUCE_WAKEUP_REASONS */
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 
 static const struct list_head* get_wakeup_reasons_nosync(void);
 
@@ -167,15 +161,6 @@ static void print_wakeup_sources(void)
 	const struct list_head *wakeups;
 
 	if (suspend_abort) {
-<<<<<<< HEAD
-		pr_info("Abort: %s", abort_reason);
-=======
-		pr_info("Abort: %s\n", abort_reason);
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
-		return;
-	}
-
-	wakeups = get_wakeup_reasons_nosync();
 	list_for_each_entry(n, wakeups, next) {
 		if (n->desc && n->desc->action && n->desc->action->name)
 			pr_info("Resume caused by IRQ %d, %s\n", n->irq,
@@ -206,10 +191,7 @@ static bool walk_irq_node_tree(struct wakeup_irq_node *root,
 	return visit(root, cookie);
 }
 
-<<<<<<< HEAD
-=======
 #ifdef CONFIG_DEDUCE_WAKEUP_REASONS
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 static bool is_node_handled(struct wakeup_irq_node *n, void *_p)
 {
 	return n->handled;
@@ -219,10 +201,7 @@ static bool base_irq_nodes_done(void)
 {
 	return walk_irq_node_tree(base_irq_nodes, is_node_handled, NULL);
 }
-<<<<<<< HEAD
-=======
 #endif
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 
 struct buf_cookie {
 	char *buf;
@@ -313,10 +292,7 @@ static struct attribute_group attr_group = {
 static inline void stop_logging_wakeup_reasons(void)
 {
 	ACCESS_ONCE(log_wakeups) = false;
-<<<<<<< HEAD
-=======
 	smp_wmb();
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 }
 
 /*
@@ -331,10 +307,6 @@ void log_base_wakeup_reason(int irq)
 	 */
 	base_irq_nodes = add_to_siblings(base_irq_nodes, irq);
 	BUG_ON(!base_irq_nodes);
-<<<<<<< HEAD
-}
-
-=======
 #ifndef CONFIG_DEDUCE_WAKEUP_REASONS
 	base_irq_nodes->handled = true;
 #endif
@@ -342,7 +314,6 @@ void log_base_wakeup_reason(int irq)
 
 #ifdef CONFIG_DEDUCE_WAKEUP_REASONS
 
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 /* This function is called by generic_handle_irq, which may call itself
  * recursively.  This happens with interrupts disabled.  Using
  * log_possible_wakeup_reason, we build a tree of interrupts, tracing the call
@@ -361,14 +332,6 @@ void log_base_wakeup_reason(int irq)
 
  */
 
-<<<<<<< HEAD
-struct wakeup_irq_node *
-log_possible_wakeup_reason_start(int irq, struct irq_desc *desc, unsigned depth)
-{
-	BUG_ON(!irqs_disabled() || !logging_wakeup_reasons());
-	BUG_ON((signed)depth < 0);
-
-=======
 static struct wakeup_irq_node *
 log_possible_wakeup_reason_start(int irq, struct irq_desc *desc, unsigned depth)
 {
@@ -382,14 +345,12 @@ log_possible_wakeup_reason_start(int irq, struct irq_desc *desc, unsigned depth)
 	if (!logging_wakeup_reasons())
 		return NULL;
 
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 	/* If suspend was aborted, the base IRQ nodes are missing, and we stop
 	 * logging interrupts immediately.
 	 */
 	if (!base_irq_nodes) {
 		stop_logging_wakeup_reasons();
 		return NULL;
-<<<<<<< HEAD
 	}
 
 	/* We assume wakeup interrupts are handlerd only by the first core. */
@@ -398,16 +359,6 @@ log_possible_wakeup_reason_start(int irq, struct irq_desc *desc, unsigned depth)
 		return NULL;
 	}
 
-=======
-	}
-
-	/* We assume wakeup interrupts are handlerd only by the first core. */
-	/* TODO: relax this by having percpu versions of the irq tree */
-	if (smp_processor_id() != 0) {
-		return NULL;
-	}
-
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 	if (depth == 0) {
 		cur_irq_tree_depth = 0;
 		cur_irq_tree = search_siblings(base_irq_nodes, irq);
@@ -430,11 +381,7 @@ log_possible_wakeup_reason_start(int irq, struct irq_desc *desc, unsigned depth)
 	return cur_irq_tree;
 }
 
-<<<<<<< HEAD
-void log_possible_wakeup_reason_complete(struct wakeup_irq_node *n,
-=======
 static void log_possible_wakeup_reason_complete(struct wakeup_irq_node *n,
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 					unsigned depth,
 					bool handled)
 {
@@ -448,38 +395,6 @@ static void log_possible_wakeup_reason_complete(struct wakeup_irq_node *n,
 			print_wakeup_sources();
 		}
 	}
-<<<<<<< HEAD
-}
-
-bool log_possible_wakeup_reason(int irq,
-			struct irq_desc *desc,
-			bool (*handler)(struct irq_desc *))
-{
-	static DEFINE_PER_CPU(unsigned int, depth);
-
-	struct wakeup_irq_node *n;
-	bool handled;
-	unsigned d;
-
-	d = get_cpu_var(depth)++;
-	put_cpu_var(depth);
-
-	n = log_possible_wakeup_reason_start(irq, desc, d);
-
-	handled = handler(desc);
-
-	d = --get_cpu_var(depth);
-	put_cpu_var(depth);
-
-	if (!handled && desc && desc->action)
-		pr_debug("%s: irq %d action %pF not handled\n", __func__,
-			irq, desc->action->handler);
-
-	log_possible_wakeup_reason_complete(n, d, handled);
-
-	return handled;
-=======
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 }
 
 bool log_possible_wakeup_reason(int irq,
@@ -531,11 +446,7 @@ void log_suspend_abort_reason(const char *fmt, ...)
 	vsnprintf(abort_reason, MAX_SUSPEND_ABORT_LEN, fmt, args);
 	va_end(args);
 
-<<<<<<< HEAD
-	spin_unlock(&resume_reason_lock);
-=======
 	spin_unlock_irqrestore(&resume_reason_lock, flags);
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 }
 
 static bool match_node(struct wakeup_irq_node *n, void *_p)
@@ -547,16 +458,10 @@ static bool match_node(struct wakeup_irq_node *n, void *_p)
 int check_wakeup_reason(int irq)
 {
 	bool found;
-<<<<<<< HEAD
-	spin_lock(&resume_reason_lock);
-	found = !walk_irq_node_tree(base_irq_nodes, match_node, &irq);
-	spin_unlock(&resume_reason_lock);
-=======
 	unsigned long flags;
 	spin_lock_irqsave(&resume_reason_lock, flags);
 	found = !walk_irq_node_tree(base_irq_nodes, match_node, &irq);
 	spin_unlock_irqrestore(&resume_reason_lock, flags);
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 	return found;
 }
 
@@ -639,11 +544,7 @@ static int wakeup_reason_pm_event(struct notifier_block *notifier,
 	unsigned long flags;
 	switch (pm_event) {
 	case PM_SUSPEND_PREPARE:
-<<<<<<< HEAD
-		spin_lock(&resume_reason_lock);
-=======
 		spin_lock_irqsave(&resume_reason_lock, flags);
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 		suspend_abort = false;
 		spin_unlock_irqrestore(&resume_reason_lock, flags);
 		/* monotonic time since boot */
