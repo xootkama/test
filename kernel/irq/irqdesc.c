@@ -353,11 +353,7 @@ int generic_handle_irq(unsigned int irq)
 	if (!desc)
 		return -EINVAL;
 
-<<<<<<< HEAD
-	if (unlikely(logging_wakeup_reasons()))
-=======
 	if (unlikely(logging_wakeup_reasons_nosync()))
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 		return log_possible_wakeup_reason(irq,
 				desc,
 				generic_handle_irq_desc);
