@@ -575,6 +575,9 @@ static struct notifier_block wakeup_reason_pm_notifier_block = {
 	.notifier_call = wakeup_reason_pm_event,
 };
 
+/* Initializes the sysfs parameter
+ * registers the pm_event notifier
+ */
 int __init wakeup_reason_init(void)
 {
 	int retval;
@@ -598,5 +601,5 @@ int __init wakeup_reason_init(void)
 	}
 	return 0;
 }
-
+	
 late_initcall(wakeup_reason_init);
