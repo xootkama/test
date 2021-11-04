@@ -39,22 +39,6 @@
 #include <asm/vdso.h>
 #include <asm/vdso_datapage.h>
 
-<<<<<<< HEAD
-#ifdef USE_SYSCALL
-#if defined(__LP64__)
-static int enable_64 = 1;
-module_param(enable_64, int, 0600);
-MODULE_PARM_DESC(enable_64, "enable vDSO for aarch64 0=off");
-#endif
-#if (!defined(__LP64) || (defined(CONFIG_COMPAT) && defined(CONFIG_VDSO32)))
-static int enable_32 = 1;
-module_param(enable_32, int, 0600);
-MODULE_PARM_DESC(enable_32, "enable vDSO for aarch64 0=off");
-#endif
-#endif
-
-=======
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 struct vdso_mappings {
 	unsigned long num_code_pages;
 	struct vm_special_mapping data_mapping;
@@ -147,12 +131,7 @@ int aarch32_setup_vectors_page(struct linux_binprm *bprm, int uses_interp)
 	unsigned long addr;
 	void *ret;
 
-<<<<<<< HEAD
-	if (down_write_killable(&mm->mmap_sem))
-		return -EINTR;
-=======
 	down_write(&mm->mmap_sem);
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 	addr = get_unmapped_area(NULL, 0, PAGE_SIZE, 0, 0);
 	if (IS_ERR_VALUE(addr)) {
 		ret = ERR_PTR(addr);
@@ -301,16 +280,9 @@ int aarch32_setup_vectors_page(struct linux_binprm *bprm, int uses_interp)
 {
 	struct mm_struct *mm = current->mm;
 	void *ret;
-<<<<<<< HEAD
-
-	if (down_write_killable(&mm->mmap_sem))
-		return -EINTR;
-
-=======
 
 	down_write(&mm->mmap_sem);
 
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 	ret = ERR_PTR(vdso_setup(mm, &vdso32_mappings));
 #ifdef CONFIG_KUSER_HELPERS
 	if (!IS_ERR(ret))
@@ -334,13 +306,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	struct mm_struct *mm = current->mm;
 	int ret;
 
-<<<<<<< HEAD
-	if (down_write_killable(&mm->mmap_sem))
-		return -EINTR;
-
-=======
 	down_write(&mm->mmap_sem);
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 	ret = vdso_setup(mm, &vdso_mappings);
 	up_write(&mm->mmap_sem);
 	return ret;
@@ -384,10 +350,6 @@ void update_vsyscall(struct timekeeper *tk)
 	if (!(use_syscall & USE_SYSCALL)) {
 #else
 	if (!use_syscall) {
-<<<<<<< HEAD
-#endif
-=======
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 		struct timespec btm = ktime_to_timespec(tk->offs_boot);
 
 		/* tkr_mono.cycle_last == tkr_raw.cycle_last */
@@ -396,10 +358,6 @@ void update_vsyscall(struct timekeeper *tk)
 		vdso_data->raw_time_nsec        = tk->tkr_raw.xtime_nsec;
 		vdso_data->xtime_clock_sec	= tk->xtime_sec;
 		vdso_data->xtime_clock_snsec	= tk->tkr_mono.xtime_nsec;
-<<<<<<< HEAD
-		/* tkr_raw.xtime_nsec == 0 */
-=======
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 		vdso_data->cs_mono_mult		= tk->tkr_mono.mult;
 		vdso_data->cs_raw_mult		= tk->tkr_raw.mult;
 		/* tkr_mono.shift == tkr_raw.shift */
