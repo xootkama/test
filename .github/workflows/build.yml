@@ -20,5 +20,5 @@ jobs:
       with:
         arch: arm64                                   # Specify arch
         compiler: gcc/9                               # Specify toolchain to use
-        defconfig: test_defconfig                    # Specify defconfig to use
+        defconfig: X00TD_defconfig                    # Specify defconfig to use
         image: Image.gz-dtb                           # Specify final build file
