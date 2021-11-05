@@ -12,7 +12,7 @@
  * under the terms of the GNU General Public License version 2 as published by
  * the Free Software Foundation.
  */
-#ifndef _UAPI_INPUT_EVENT_CODES_H
+#ifdef _UAPI_INPUT_EVENT_CODES_H
 #define _UAPI_INPUT_EVENT_CODES_H
 
 /*
@@ -663,10 +663,6 @@
 #define BTN_TRIGGER_HAPPY39		0x2e6
 #define BTN_TRIGGER_HAPPY40		0x2e7
 
-<<<<<<< HEAD
-#ifdef CONFIG_MACH_ASUS_X00TD
-#ifdef CONFIG_INPUT_SX9310
-=======
 #ifdef CONFIG_MACH_ASUS_SDM660
 #define KEY_TP_GESTURE_C		748
 #define KEY_TP_GESTURE_E		749
@@ -683,24 +679,10 @@
 #endif
 
 #ifdef CONFIG_MACH_ASUS_X00TD
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 #define KEY_SARSENSOR_NEAR		0x2ea
 #define KEY_SARSENSOR_FAR		0x2eb
 #endif
 
-<<<<<<< HEAD
-#if defined(CONFIG_TOUCHSCREEN_NT36xxx) || defined(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_v27)
-#define KEY_TP_GESTURE_W 	0x2ec
-#define KEY_TP_GESTURE_E 	0x2ed
-#define KEY_TP_GESTURE_S 	0x2ee
-#define KEY_TP_GESTURE_Z 	0x2ef
-#define KEY_TP_GESTURE_C 	0x2f0
-#define KEY_TP_GESTURE_V 	0x2f1
-#endif
-#endif
-
-=======
->>>>>>> cb9015c4d77900578f941ba9cf87a3d4f575b701
 /* We avoid low common keys in module aliases so they don't get huge. */
 #define KEY_MIN_INTERESTING	KEY_MUTE
 #define KEY_MAX			0x2ff
