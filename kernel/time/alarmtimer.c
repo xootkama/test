@@ -401,90 +401,11 @@ static enum alarmtimer_restart alarmtimer_nsleep_wakeup(struct alarm *alarm,
 	return ALARMTIMER_NORESTART;
 }
 
-/**
- * alarmtimer_do_nsleep - Internal alarmtimer nsleep implementation
- * @alarm: ptr to alarmtimer
- * @absexp: absolute expiration time
- *
- * Sets the alarm timer and sleeps until it is fired or interrupted.
- */
-static int alarmtimer_do_nsleep(struct alarm *alarm, ktime_t absexp)
-{
-	alarm->data = (void *)current;
-	do {
-		set_current_state(TASK_INTERRUPTIBLE);
-		alarm_start(alarm, absexp);
-		if (likely(alarm->data))
-			schedule();
-
-		alarm_cancel(alarm);
-	} while (alarm->data && !signal_pending(current));
-
-	__set_current_state(TASK_RUNNING);
-
-	return (alarm->data == NULL);
-}
-
 	/* The other values in restart are already filled in */
 	ret = -ERESTART_RESTARTBLOCK;
 out:
 	return ret;
 }
-
-/**
- * alarm_timer_nsleep - alarmtimer nanosleep
- * @which_clock: clockid
- * @flags: determins abstime or relative
- * @tsreq: requested sleep time (abs or rel)
- * @rmtp: remaining sleep time saved
- *
- * Handles clock_nanosleep calls against _ALARM clockids
- */
-static int alarm_timer_nsleep(const clockid_t which_clock, int flags,
-		     struct timespec *tsreq, struct timespec __user *rmtp)
-{
-	enum  alarmtimer_type type = clock2alarm(which_clock);
-	struct alarm alarm;
-	ktime_t exp;
-	int ret = 0;
-	struct restart_block *restart;
-
-	if (!alarmtimer_get_rtcdev())
-		return -EOPNOTSUPP;
-
-	if (flags & ~TIMER_ABSTIME)
-		return -EINVAL;
-
-	if (!capable(CAP_WAKE_ALARM))
-		return -EPERM;
-
-	alarm_init(&alarm, type, alarmtimer_nsleep_wakeup);
-
-	exp = timespec_to_ktime(*tsreq);
-	/* Convert (if necessary) to absolute time */
-	if (flags != TIMER_ABSTIME) {
-		ktime_t now = alarm_bases[type].gettime();
-
-		exp = ktime_add_safe(now, exp);
-	}
-
-	if (alarmtimer_do_nsleep(&alarm, exp))
-		goto out;
-
-	if (freezing(current))
-		alarmtimer_freezerset(exp, type);
-
-	/* abs timers don't set remaining time or restart */
-	if (flags == TIMER_ABSTIME) {
-		ret = -ERESTARTNOHAND;
-		goto out;
-	}
-
-	if (rmtp) {
-		ret = update_rmtp(exp, type, rmtp);
-		if (ret <= 0)
-			goto out;
-	}
 
 /* Suspend hook structures */
 static const struct dev_pm_ops alarmtimer_pm_ops = {
@@ -524,37 +445,3 @@ static int __init alarmtimer_init(void)
 
 	posix_timers_register_clock(CLOCK_REALTIME_ALARM, &alarm_clock);
 	posix_timers_register_clock(CLOCK_BOOTTIME_ALARM, &alarm_clock);
-
-	/* Initialize alarm bases */
-	alarm_bases[ALARM_REALTIME].base_clockid = CLOCK_REALTIME;
-	alarm_bases[ALARM_REALTIME].gettime = &ktime_get_real;
-	alarm_bases[ALARM_BOOTTIME].base_clockid = CLOCK_BOOTTIME;
-	alarm_bases[ALARM_BOOTTIME].gettime = &ktime_get_boottime;
-	for (i = 0; i < ALARM_NUMTYPE; i++) {
-		timerqueue_init_head(&alarm_bases[i].timerqueue);
-		spin_lock_init(&alarm_bases[i].lock);
-	}
-
-	error = alarmtimer_rtc_interface_setup();
-	if (error)
-		return error;
-
-	error = platform_driver_register(&alarmtimer_driver);
-	if (error)
-		goto out_if;
-
-	pdev = platform_device_register_simple("alarmtimer", -1, NULL, 0);
-	if (IS_ERR(pdev)) {
-		error = PTR_ERR(pdev);
-		goto out_drv;
-	}
-	ws = wakeup_source_register("alarmtimer");
-	return 0;
-
-out_drv:
-	platform_driver_unregister(&alarmtimer_driver);
-out_if:
-	alarmtimer_rtc_interface_remove();
-	return error;
-}
-device_initcall(alarmtimer_init);
